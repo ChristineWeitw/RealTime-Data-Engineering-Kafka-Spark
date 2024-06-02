@@ -38,6 +38,7 @@ This project demonstrates an end-to-end data engineering pipeline for real-time 
 6. **Control Center**
    - **Description**: A user interface for managing and monitoring Kafka clusters.
    - **Role**: Provides insights into the Kafka cluster's performance and health.
+![alt text](image-1.png)
 
 7. **Schema Registry**
    - **Description**: A tool for managing and enforcing schemas for Kafka topics.
