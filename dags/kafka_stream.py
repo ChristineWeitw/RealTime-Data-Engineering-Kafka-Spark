@@ -36,7 +36,10 @@ def stream_data():
     #     # broker:9092 is used in containerized or networked environments where the Kafka broker is identified by a hostname rather than localhost.
     #     value_serializer=lambda v: json.dumps(v).encode('utf-8')
     # )
-    producer = KafkaProducer(bootstrap_servers=['broker:29092'], max_block_ms=5000)
+    producer = KafkaProducer(bootstrap_servers='broker:29092',
+                             api_version=(2, 7, 0),
+                             value_serializer=lambda v: json.dumps(v).encode('utf-8'), 
+                             max_block_ms=5000)
     topic = 'stock_prices'
     symbols = ["0050.TW", "VOO", "NVDA"]
 
@@ -50,8 +53,8 @@ def stream_data():
                     'timestamp': timestamp
                 }
                 send_to_kafka(producer, topic, data)
-        # # Wait for 3 hours
-        # time.sleep(3 * 60 * 60)
+        # Wait for 3 hours
+        time.sleep(3 * 60 * 60)
 
 with DAG('user_automation',
          default_args=default_args,
@@ -62,3 +65,5 @@ with DAG('user_automation',
         task_id='stream_data_from_api',
         python_callable=stream_data
     )
+
+stream_data();
