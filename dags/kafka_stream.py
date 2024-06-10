@@ -3,6 +3,7 @@ from datetime import datetime
 from kafka import KafkaProducer
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+import uuid
 import json
 import time
 
@@ -30,15 +31,10 @@ def send_to_kafka(producer, topic, data):
         print(f"Failed to send data to Kafka: {e}")
 
 def stream_data():
-    # producer = KafkaProducer(
-    #     bootstrap_servers='localhost:9092',    
-    #     # localhost:9092 is used when Kafka is running locally.
-    #     # broker:9092 is used in containerized or networked environments where the Kafka broker is identified by a hostname rather than localhost.
-    #     value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    # )
-    producer = KafkaProducer(bootstrap_servers='broker:29092',
+
+    producer = KafkaProducer(bootstrap_servers=['broker:29092', 'localhost:9092'],
                              api_version=(2, 7, 0),
-                             value_serializer=lambda v: json.dumps(v).encode('utf-8'), 
+                             value_serializer=lambda v: json.dumps(v, default=str).encode('utf-8'), 
                              max_block_ms=5000)
     topic = 'stock_prices'
     symbols = ["0050.TW", "VOO", "NVDA"]
@@ -48,13 +44,14 @@ def stream_data():
             price, timestamp = get_stock_price(symbol)
             if price is not None:
                 data = {
+                    'id' : str(uuid.uuid4()),
                     'symbol': symbol,
                     'price': price,
                     'timestamp': timestamp
                 }
                 send_to_kafka(producer, topic, data)
         # Wait for 3 hours
-        time.sleep(3 * 60 * 60)
+        time.sleep(10)
 
 with DAG('user_automation',
          default_args=default_args,
